@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Component Styles */
+
+/* Global Styles */
+body {
+  @apply bg-gray-50 text-gray-900;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Utility Classes */
+.container-custom {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.btn-primary {
+  @apply px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors font-medium;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-medium;
+}
+
+.btn-danger {
+  @apply px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors font-medium;
+}
+
+.card {
+  @apply bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow;
+}
+
+.input-field {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+.badge-success {
+  @apply inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium;
+}
+
+.badge-warning {
+  @apply inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium;
+}
+
+.badge-danger {
+  @apply inline-block px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium;
+}
+
+/* Animations */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 2s linear infinite;
+}
+
+/* Responsive Utilities */
+@media (max-width: 640px) {
+  .container-custom {
+    @apply px-3;
+  }
+}

@@ -1,0 +1,259 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useDispatch } from 'react-redux';
+import { selectProduct, setSearchResults, clearSearchResults } from '../../redux/slices/orderPlacementSlice';
+import { searchProducts } from '../../services/mockProductsData';
+
+const SearchBar = () => {
+  const dispatch = useDispatch();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [results, setResults] = useState([]);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [isTyping, setIsTyping] = useState(false);
+  
+  const searchRef = useRef(null);
+  const dropdownRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowDropdown(false);
+        setSelectedIndex(-1);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Search with debounce
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchQuery.trim().length >= 2) {
+        const searchResults = searchProducts(searchQuery);
+        setResults(searchResults);
+        setShowDropdown(searchResults.length > 0);
+        dispatch(setSearchResults(searchResults));
+        setIsTyping(false);
+      } else {
+        setResults([]);
+        setShowDropdown(false);
+        dispatch(clearSearchResults());
+        setIsTyping(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, dispatch]);
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    setSelectedIndex(-1);
+    setIsTyping(true);
+  };
+
+  const handleProductSelect = (product) => {
+    dispatch(selectProduct(product));
+    setSearchQuery('');
+    setShowDropdown(false);
+    setResults([]);
+    setSelectedIndex(-1);
+    dispatch(clearSearchResults());
+    
+    // Focus back on input for next search
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  // Keyboard navigation
+  const handleKeyDown = (e) => {
+    if (!showDropdown || results.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex((prev) => 
+          prev < results.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex >= 0 && selectedIndex < results.length) {
+          handleProductSelect(results[selectedIndex]);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowDropdown(false);
+        setSelectedIndex(-1);
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Scroll selected item into view
+  useEffect(() => {
+    if (selectedIndex >= 0 && dropdownRef.current) {
+      const selectedElement = dropdownRef.current.children[selectedIndex];
+      if (selectedElement) {
+        selectedElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        });
+      }
+    }
+  }, [selectedIndex]);
+
+  const getCategoryColor = (category) => {
+    const colors = {
+      Ethical: 'bg-purple-100 text-purple-800',
+      Generic: 'bg-blue-100 text-blue-800',
+      OTC: 'bg-green-100 text-green-800',
+      Standard: 'bg-gray-100 text-gray-800',
+    };
+    return colors[category] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getStockStatus = (stock) => {
+    if (stock > 1000) return { color: 'text-green-600', text: 'In Stock' };
+    if (stock > 200) return { color: 'text-yellow-600', text: 'Low Stock' };
+    return { color: 'text-red-600', text: 'Critical' };
+  };
+
+  return (
+    <div ref={searchRef} className="relative w-full">
+      <div className="relative">
+        <input
+          ref={inputRef}
+          type="text"
+          value={searchQuery}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Search by Product Name or Code (e.g., Paracetamol or MED001)"
+          className="w-full px-4 py-3 pl-12 text-base border-2 border-gray-300 rounded-lg 
+                   focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200
+                   transition-all duration-200"
+          autoComplete="off"
+        />
+        <div className="absolute left-4 top-3.5 text-gray-400">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        {isTyping && (
+          <div className="absolute right-4 top-3.5">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+          </div>
+        )}
+      </div>
+
+      {/* Dropdown with search results */}
+      {showDropdown && results.length > 0 && (
+        <div 
+          ref={dropdownRef}
+          className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg 
+                   shadow-lg max-h-96 overflow-y-auto"
+        >
+          {results.map((product, index) => {
+            const stockStatus = getStockStatus(product.stock);
+            const isSelected = index === selectedIndex;
+            
+            return (
+              <div
+                key={product.productCode}
+                onClick={() => handleProductSelect(product)}
+                className={`px-4 py-3 cursor-pointer border-b border-gray-100 last:border-b-0
+                          transition-colors duration-150
+                          ${isSelected 
+                            ? 'bg-blue-50 border-l-4 border-l-blue-500' 
+                            : 'hover:bg-gray-50'
+                          }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-gray-900">
+                        {product.productName}
+                      </span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getCategoryColor(product.category)}`}>
+                        {product.category}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <span className="flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                        {product.productCode}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        {product.companyName}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col items-end gap-1 ml-4">
+                    <span className="text-lg font-bold text-blue-600">
+                      ₹{product.pricePerUnit.toFixed(2)}
+                    </span>
+                    <span className={`text-xs font-medium ${stockStatus.color}`}>
+                      {stockStatus.text}: {product.stock}
+                    </span>
+                    {product.scheme && (
+                      <span className="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full font-medium">
+                        {product.scheme.buy}+{product.scheme.free} Free
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* No results message */}
+      {showDropdown && results.length === 0 && searchQuery.length >= 2 && !isTyping && (
+        <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg p-4">
+          <div className="text-center text-gray-500">
+            <svg className="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="font-medium">No products found</p>
+            <p className="text-sm mt-1">Try searching with different keywords</p>
+          </div>
+        </div>
+      )}
+
+      {/* Search hint */}
+      {searchQuery.length === 0 && (
+        <div className="mt-2 text-xs text-gray-500 flex items-center gap-2">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Use ↑↓ arrows to navigate, Enter to select, Esc to close
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default SearchBar;

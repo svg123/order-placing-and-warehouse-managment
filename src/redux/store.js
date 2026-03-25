@@ -3,6 +3,7 @@ import authReducer from './slices/authSlice';
 import orderReducer from './slices/orderSlice';
 import productReducer from './slices/productSlice';
 import uiReducer from './slices/uiSlice';
+import orderPlacementReducer from './slices/orderPlacementSlice';
 
 const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ const store = configureStore({
     order: orderReducer,
     product: productReducer,
     ui: uiReducer,
+    orderPlacement: orderPlacementReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -12,6 +12,7 @@ import TrackOrderPage from './pages/TrackOrder';
 import ProfilePage from './pages/Profile';
 import OutstandingPage from './pages/Outstanding';
 import OffersPage from './pages/Offers';
+import OrderPlacementPage from './pages/OrderPlacement';
 import NotFoundPage from './pages/NotFound';
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/outstanding" element={<OutstandingPage />} />
         <Route path="/offers" element={<OffersPage />} />
+        <Route path="/order-placement" element={<OrderPlacementPage />} />
         <Route path="/" element={<DashboardPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

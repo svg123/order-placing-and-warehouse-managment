@@ -63,7 +63,9 @@ export default function DashboardPage() {
         <div className="card">
           <h2 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button className="btn-primary w-full">
+            <button 
+              onClick={() => navigate('/order-placement')}
+              className="btn-primary w-full">
               Place New Order
             </button>
             <button 

@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { selectProduct, setSearchResults, clearSearchResults } from '../../redux/slices/orderPlacementSlice';
 import { searchProducts } from '../../services/mockProductsData';
+import useVoiceRecognition from '../../hooks/useVoiceRecognition';
+import VoiceSearchButton, { VoiceErrorToast, BrowserCompatBanner } from './VoiceSearchButton';
 
 const SearchBar = () => {
   const dispatch = useDispatch();
@@ -14,6 +16,52 @@ const SearchBar = () => {
   const searchRef = useRef(null);
   const dropdownRef = useRef(null);
   const inputRef = useRef(null);
+  const toastTimerRef = useRef(null);
+
+  // Toast auto-dismiss state
+  const [showCompatBanner, setShowCompatBanner] = useState(true);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+
+  // Voice recognition: called when a final transcript is available
+  const handleVoiceResult = useCallback((text) => {
+    setSearchQuery(text);
+    // The debounce effect on searchQuery will auto-trigger search
+  }, []);
+
+  // Voice recognition: called for interim (real-time) results
+  const handleVoiceInterim = useCallback((text) => {
+    // Interim text shown via the input display value — no state change to searchQuery
+    // until final result arrives (to avoid firing premature searches)
+  }, []);
+
+  const {
+    isListening,
+    isSupported: isVoiceSupported,
+    transcript: voiceTranscript,
+    interimTranscript: voiceInterim,
+    error: voiceError,
+    errorDetail: voiceErrorDetail,
+    toggleListening,
+    clearError,
+  } = useVoiceRecognition({ onResult: handleVoiceResult, onInterim: handleVoiceInterim });
+
+  // Show toast when error occurs, auto-dismiss after 8 seconds
+  useEffect(() => {
+    if (voiceError && voiceErrorDetail) {
+      setShowErrorToast(true);
+      clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = setTimeout(() => {
+        setShowErrorToast(false);
+        clearError();
+      }, 8000);
+    }
+    return () => clearTimeout(toastTimerRef.current);
+  }, [voiceError, voiceErrorDetail, clearError]);
+
+  // The value shown in the input: interim text while listening, else searchQuery
+  const displayValue = isListening && voiceInterim
+    ? voiceInterim
+    : searchQuery;
 
   // Handle click outside to close dropdown
   useEffect(() => {
@@ -34,7 +82,7 @@ const SearchBar = () => {
       if (searchQuery.trim().length >= 2) {
         const searchResults = searchProducts(searchQuery);
         setResults(searchResults);
-        setShowDropdown(searchResults.length > 0);
+        setShowDropdown(true);
         dispatch(setSearchResults(searchResults));
         setIsTyping(false);
       } else {
@@ -131,28 +179,84 @@ const SearchBar = () => {
 
   return (
     <div ref={searchRef} className="relative w-full">
+      {/* Browser Compatibility Banner */}
+      {!isVoiceSupported && showCompatBanner && (
+        <BrowserCompatBanner onDismiss={() => setShowCompatBanner(false)} />
+      )}
+
+      {/* Voice Error Toast */}
+      {showErrorToast && voiceErrorDetail && (
+        <VoiceErrorToast
+          error={voiceError}
+          errorDetail={voiceErrorDetail}
+          onRetry={voiceErrorDetail.retryable ? () => { clearError(); toggleListening(); } : undefined}
+          onDismiss={() => { setShowErrorToast(false); clearError(); }}
+        />
+      )}
+
       <div className="relative">
         <input
           ref={inputRef}
           type="text"
-          value={searchQuery}
+          value={displayValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder="Search by Product Name or Code (e.g., Paracetamol or MED001)"
-          className="w-full px-4 py-3 pl-12 text-base border-2 border-gray-300 rounded-lg 
-                   focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200
-                   transition-all duration-200"
+          className={`
+            w-full px-4 py-3 pl-10 sm:pl-12 pr-14 sm:pr-16 text-sm sm:text-base
+            border-2 rounded-lg transition-all duration-200
+            ${
+              isListening
+                ? 'border-red-400 animate-input-border-glow bg-red-50/30'
+                : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200'
+            }
+            focus:outline-none
+          `}
           autoComplete="off"
+          readOnly={isListening}
         />
-        <div className="absolute left-4 top-3.5 text-gray-400">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
-        {isTyping && (
-          <div className="absolute right-4 top-3.5">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+
+        {/* Right-side controls: typing indicator + voice button */}
+        <div className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+          {isTyping && !isListening && (
+            <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-blue-500"></div>
+          )}
+          <VoiceSearchButton
+            isListening={isListening}
+            onClick={toggleListening}
+            isSupported={isVoiceSupported}
+          />
+        </div>
+
+        {/* Listening status bar — shows below input on all screen sizes */}
+        {isListening && (
+          <div className="mt-2 flex items-center gap-2.5 px-1">
+            <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+            </span>
+            {voiceInterim ? (
+              <p className="text-xs sm:text-sm text-red-500 font-medium truncate animate-text-shimmer">
+                {voiceInterim}
+              </p>
+            ) : (
+              <p className="text-xs sm:text-sm text-red-500 font-medium">
+                Listening for your search...
+              </p>
+            )}
+            <button
+              onClick={toggleListening}
+              className="ml-auto flex-shrink-0 text-xs text-red-500 hover:text-red-700
+                         font-medium px-2 py-0.5 rounded-md hover:bg-red-50 transition-colors"
+            >
+              Cancel
+            </button>
           </div>
         )}
       </div>
@@ -254,13 +358,28 @@ const SearchBar = () => {
       )}
 
       {/* Search hint */}
-      {searchQuery.length === 0 && (
-        <div className="mt-2 text-xs text-gray-500 flex items-center gap-2">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          Use ↑↓ arrows to navigate, Enter to select, Esc to close
+      {searchQuery.length === 0 && !isListening && (
+        <div className="mt-2 flex flex-col xs:flex-row text-xs text-gray-500 gap-1 xs:gap-4 xs:items-center">
+          <span className="flex items-center gap-1">
+            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="hidden sm:inline">Use ↑↓ arrows to navigate, Enter to select, Esc to close</span>
+            <span className="sm:hidden">Type or tap mic to search</span>
+          </span>
+          {isVoiceSupported && (
+            <span className="flex items-center gap-1">
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                <line x1="12" y1="19" x2="12" y2="23" strokeLinecap="round" />
+              </svg>
+              Click the microphone icon to search by voice
+            </span>
+          )}
         </div>
       )}
     </div>

@@ -89,6 +89,11 @@ export default function DashboardPage() {
               🎉 Offers & Promotions
             </button>
             <button 
+              onClick={() => navigate('/communication')}
+              className="btn-secondary w-full">
+              💬 Communication
+            </button>
+            <button 
               onClick={() => navigate('/profile')}
               className="btn-secondary w-full">
               View Profile

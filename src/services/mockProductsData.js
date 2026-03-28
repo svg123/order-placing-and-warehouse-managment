@@ -1,4 +1,6 @@
 // Mock product data for the Medical Wholesale Application
+import Fuse from 'fuse.js';
+
 export const mockProducts = [
   {
     productCode: 'MED001',
@@ -222,26 +224,66 @@ export const mockProducts = [
   },
 ];
 
+// Fuse-based fuzzy search configuration
+const fuseOptions = {
+  includeScore: true,
+  shouldSort: true,
+  threshold: 0.45, // typo tolerance (0 = exact, 1 = very fuzzy)
+  ignoreLocation: true,
+  distance: 100,
+  minMatchCharLength: 2,
+  keys: [
+    { name: 'composition', weight: 0.5 },
+    { name: 'productName', weight: 0.25 },
+    { name: 'productCode', weight: 0.15 },
+    { name: 'companyName', weight: 0.1 },
+  ],
+};
+
+let fuse = new Fuse(mockProducts, fuseOptions);
+
+const normalizeQuery = (q) =>
+  q
+    .toLowerCase()
+    .replace(/[+,]/g, ' ') // treat + and , as separators
+    .replace(/\s+/g, ' ')
+    .trim();
+
 /**
- * Search products by name or code
- * @param {string} query - Search query
- * @returns {Array} - Filtered products
+ * Enhanced fuzzy search supporting productName, productCode, composition and companyName
+ * - normalizes separators and spaces
+ * - handles typos and partial input via Fuse.js
+ * - returns up to 10 ranked results
  */
 export const searchProducts = (query) => {
-  if (!query || query.trim().length < 2) {
-    return [];
-  }
+  if (!query) return [];
 
-  const searchTerm = query.toLowerCase().trim();
-  
-  return mockProducts.filter((product) => {
-    const nameMatch = product.productName.toLowerCase().includes(searchTerm);
-    const codeMatch = product.productCode.toLowerCase().includes(searchTerm);
-    const companyMatch = product.companyName.toLowerCase().includes(searchTerm);
-    
-    return nameMatch || codeMatch || companyMatch;
-  }).slice(0, 10); // Limit to 10 results for better UX
+  const normalized = normalizeQuery(query);
+  if (normalized.length < 2) return [];
+
+  // Use Fuse to search; Fuse handles typo tolerance and ranking based on weights
+  try {
+    const results = fuse.search(normalized, { limit: 10 });
+    return results.map((r) => r.item);
+  } catch (e) {
+    // Fallback to simple contains() if something goes wrong
+    const searchTerm = normalized;
+    return mockProducts
+      .filter((product) => {
+        const hay = (
+          product.productName + ' ' +
+          product.productCode + ' ' +
+          (product.composition || '') + ' ' +
+          product.companyName
+        ).toLowerCase();
+
+        return searchTerm.split(' ').every((t) => hay.includes(t));
+      })
+      .slice(0, 10);
+  }
 };
+
+
 
 /**
  * Get product by code

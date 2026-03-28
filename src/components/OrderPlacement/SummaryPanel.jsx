@@ -19,7 +19,6 @@ const SummaryPanel = () => {
 
     if (confirmed) {
       setIsPlacingOrder(true);
-      
       // Simulate API call
       setTimeout(() => {
         dispatch(placeOrder());
@@ -77,7 +76,7 @@ const SummaryPanel = () => {
             
             <div className="bg-gray-50 rounded-lg p-4 mb-6">
               <p className="text-sm text-gray-600 mb-2">Order Summary</p>
-              <div className="space-y-1 text-sm">"
+              <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Total Items:</span>
                   <span className="font-semibold">{displaySummary.totalItems}</span>

@@ -134,3 +134,34 @@ html {
     @apply text-sm text-gray-500 mt-1;
   }
 }
+
+/* ===== Urgency Animations ===== */
+@keyframes pulse-warning {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    opacity: 0.92;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0);
+  }
+}
+
+@keyframes pulse-delayed {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    opacity: 0.9;
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+  }
+}
+
+.animate-pulse-warning {
+  animation: pulse-warning 2s ease-in-out infinite;
+}
+
+.animate-pulse-delayed {
+  animation: pulse-delayed 1.5s ease-in-out infinite;
+}

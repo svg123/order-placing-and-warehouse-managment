@@ -65,6 +65,64 @@ export const NAV_ITEMS = [
     roles: [ROLES.STAFF, ROLES.MANAGEMENT, ROLES.ADMIN],
   },
   {
+    id: 'divider-staff',
+    label: '',
+    path: '',
+    icon: '',
+    roles: [ROLES.STAFF],
+    isDivider: true,
+  },
+  {
+    id: 'my-portal',
+    label: 'My Portal',
+    path: '/my-portal',
+    icon: 'user',
+    roles: [ROLES.STAFF],
+  },
+  {
+    id: 'payment-reminder',
+    label: 'Payment Reminder',
+    path: '/payment-reminder',
+    icon: 'dollar',
+    roles: [ROLES.STAFF],
+  },
+  {
+    id: 'my-tasks',
+    label: 'My Tasks',
+    path: '/my-tasks',
+    icon: 'clipboard',
+    roles: [ROLES.STAFF],
+  },
+  {
+    id: 'leave-application',
+    label: 'Leave Application',
+    path: '/leave-application',
+    icon: 'calendar',
+    roles: [ROLES.STAFF],
+  },
+  {
+    id: 'stock-checking',
+    label: 'Stock Checking',
+    path: '/stock-checking',
+    icon: 'package',
+    roles: [ROLES.STAFF],
+  },
+  {
+    id: 'raise-request',
+    label: 'Raise Request',
+    path: '/raise-request',
+    icon: 'send',
+    roles: [ROLES.STAFF],
+  },
+  {
+    id: 'divider-staff-end',
+    label: '',
+    path: '',
+    icon: '',
+    roles: [ROLES.STAFF],
+    isDivider: true,
+  },
+  {
     id: 'order-tracking',
     label: 'Order Tracking',
     path: '/order-tracking',
@@ -84,6 +142,20 @@ export const NAV_ITEMS = [
     path: '/substation-status',
     icon: 'substation',
     roles: [ROLES.STAFF, ROLES.MANAGEMENT, ROLES.ADMIN],
+  },
+  {
+    id: 'sub-stations',
+    label: 'Sub-Stations',
+    path: '/sub-stations',
+    icon: 'substations',
+    roles: [ROLES.STAFF, ROLES.MANAGEMENT, ROLES.ADMIN],
+  },
+  {
+    id: 'substation-management',
+    label: 'Sub-Station Management',
+    path: '/substation-management',
+    icon: 'settings',
+    roles: [ROLES.MANAGEMENT, ROLES.ADMIN],
   },
   {
     id: 'divider-1',
@@ -143,4 +215,103 @@ export const NAV_ITEMS = [
     icon: 'config',
     roles: [ROLES.ADMIN],
   },
+  {
+    id: 'divider-3',
+    label: '',
+    path: '',
+    icon: '',
+    roles: [ROLES.ADMIN, ROLES.MANAGEMENT],
+    isDivider: true,
+  },
+  {
+    id: 'utility',
+    label: 'Utility Module',
+    path: '/utility',
+    icon: 'utility',
+    roles: [ROLES.ADMIN, ROLES.MANAGEMENT],
+  },
 ];
+
+// ===== Sub-Stations (organized by Pharma Company) =====
+export const SUBSTATIONS = [
+  {
+    id: 'STN-ABBOTT',
+    name: 'ABBOTT',
+    displayName: 'Abbott Pharma',
+    status: 'ACTIVE',
+    location: 'Zone A - Station 1',
+  },
+  {
+    id: 'STN-MANKIND',
+    name: 'MANKIND',
+    displayName: 'Mankind Pharma',
+    status: 'ACTIVE',
+    location: 'Zone A - Station 2',
+  },
+  {
+    id: 'STN-CIPLA',
+    name: 'CIPLA',
+    displayName: 'Cipla',
+    status: 'ACTIVE',
+    location: 'Zone B - Station 1',
+  },
+  {
+    id: 'STN-LUPIN',
+    name: 'LUPIN',
+    displayName: 'Lupin',
+    status: 'ACTIVE',
+    location: 'Zone B - Station 2',
+  },
+  {
+    id: 'STN-SUN',
+    name: 'SUN',
+    displayName: 'Sun Pharma',
+    status: 'ACTIVE',
+    location: 'Zone C - Station 1',
+  },
+  {
+    id: 'STN-ZYDUS',
+    name: 'ZYDUS',
+    displayName: 'Zydus Cadila',
+    status: 'ACTIVE',
+    location: 'Zone C - Station 2',
+  },
+  {
+    id: 'STN-DRREDDY',
+    name: 'DRREDDY',
+    displayName: 'Dr. Reddy\'s',
+    status: 'IDLE',
+    location: 'Zone D - Station 1',
+  },
+  {
+    id: 'STN-AJANTA',
+    name: 'AJANTA',
+    displayName: 'Ajanta Pharma',
+    status: 'MAINTENANCE',
+    location: 'Zone D - Station 2',
+  },
+];
+
+// ===== Sub-Station Status Config =====
+export const SUBSTATION_STATUS_CONFIG = {
+  ACTIVE: { label: 'Active', color: 'success', icon: '●' },
+  IDLE: { label: 'Idle', color: 'warning', icon: '○' },
+  MAINTENANCE: { label: 'Maintenance', color: 'danger', icon: '⚠' },
+};
+
+// ===== Mismatch Issue Types (for Request Management) =====
+export const MISMATCH_ISSUE_TYPES = [
+  'QUANTITY',
+  'PRODUCT',
+  'PRICING',
+  'EXPIRY',
+  'OTHER',
+];
+
+export const MISMATCH_ISSUE_CONFIG = {
+  QUANTITY: { label: 'Quantity Mismatch', color: 'warning' },
+  PRODUCT: { label: 'Wrong Product', color: 'danger' },
+  PRICING: { label: 'Pricing Issue', color: 'danger' },
+  EXPIRY: { label: 'Expiry Date Issue', color: 'danger' },
+  OTHER: { label: 'Other Issue', color: 'info' },
+};

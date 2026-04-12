@@ -20,6 +20,13 @@ import {
   FiSettings,
   FiChevronLeft,
   FiChevronRight,
+  FiDatabase,
+  FiUser,
+  FiDollarSign,
+  FiClipboard,
+  FiCalendar,
+  FiPackage,
+  FiSend,
 } from 'react-icons/fi';
 
 const iconMap = {
@@ -27,12 +34,21 @@ const iconMap = {
   tracking: FiTarget,
   barcode: FiGrid,
   substation: FiMonitor,
+  substations: FiEdit3,
   request: FiEdit3,
   requests: FiInbox,
+  bill: FiFileText,
   analytics: FiBarChart2,
   users: FiUsers,
   audit: FiFileText,
   config: FiSettings,
+  utility: FiDatabase,
+  user: FiUser,
+  dollar: FiDollarSign,
+  clipboard: FiClipboard,
+  calendar: FiCalendar,
+  package: FiPackage,
+  send: FiSend,
 };
 
 export default function Sidebar() {

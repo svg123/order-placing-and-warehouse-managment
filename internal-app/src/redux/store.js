@@ -5,6 +5,7 @@ import dashboardReducer from './slices/dashboardSlice';
 import substationReducer from './slices/substationSlice';
 import requestReducer from './slices/requestSlice';
 import uiReducer from './slices/uiSlice';
+import utilityReducer from './slices/utilitySlice';
 
 const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ const store = configureStore({
     substation: substationReducer,
     request: requestReducer,
     ui: uiReducer,
+    utility: utilityReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

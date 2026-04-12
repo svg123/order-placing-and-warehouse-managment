@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { FiUsers, FiPlus, FiEdit2, FiTrash2, FiSearch } from 'react-icons/fi';
+import { FiUsers, FiPlus, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import VoiceSearchInput from '../components/common/VoiceSearchInput';
 import { getRoleLabel, getRoleBadgeColor } from '../utils/permissions';
 import { ROLES } from '../utils/constants';
 
@@ -39,13 +40,11 @@ export default function UserManagementPage() {
       <div className="card">
         <div className="card-body">
           <div className="relative max-w-md">
-            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
+            <VoiceSearchInput
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="input-field pl-10"
               placeholder="Search users..."
+              className="w-full max-w-md"
             />
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FiSearch, FiFilter } from 'react-icons/fi';
+import { FiFilter } from 'react-icons/fi';
+import VoiceSearchInput from '../components/common/VoiceSearchInput';
 import { formatDateTime } from '../utils/formatters';
 
 const mockLogs = [
@@ -47,14 +48,12 @@ export default function AuditLogsPage() {
       <div className="card">
         <div className="card-body">
           <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1 relative">
-              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
+            <div className="flex-1">
+              <VoiceSearchInput
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="input-field pl-10"
                 placeholder="Search logs..."
+                className="w-full"
               />
             </div>
             <div className="relative">

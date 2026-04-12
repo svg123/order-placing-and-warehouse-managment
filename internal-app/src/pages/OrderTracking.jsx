@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { FiSearch, FiPackage, FiCheck, FiClock, FiCircle } from 'react-icons/fi';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { FiPackage, FiCheck, FiClock, FiCircle, FiArrowLeft } from 'react-icons/fi';
 import StatusBadge from '../components/common/StatusBadge';
+import VoiceSearchInput from '../components/common/VoiceSearchInput';
 import { PageLoader } from '../components/common/LoadingSpinner';
 import { formatCurrency, formatDate, formatDateTime } from '../utils/formatters';
 
@@ -68,52 +69,104 @@ function TimelineStep({ step, isLast }) {
 }
 
 export default function OrderTrackingPage() {
+  const { orderId } = useParams();
+  const navigate = useNavigate();
   const [searchId, setSearchId] = useState('');
   const [trackingData, setTrackingData] = useState(null);
   const [searching, setSearching] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Auto-search when orderId comes from route params
+  useEffect(() => {
+    if (orderId) {
+      setSearchId(orderId);
+      performSearch(orderId);
+    }
+  }, [orderId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const performSearch = (id) => {
+    if (!id?.trim()) return;
+
+    setSearching(true);
+    setError(null);
+    // TODO: Replace with actual API call
+    setTimeout(() => {
+      // Simulate: use the orderId to customize mock data
+      setTrackingData({
+        ...mockTimeline,
+        orderId: id,
+      });
+      setSearching(false);
+    }, 800);
+  };
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    if (!searchId.trim()) return;
+    performSearch(searchId);
+  };
 
-    setSearching(true);
-    // TODO: Replace with actual API call
-    setTimeout(() => {
-      setTrackingData(mockTimeline);
-      setSearching(false);
-    }, 800);
+  const handleClear = () => {
+    setSearchId('');
+    setTrackingData(null);
+    setError(null);
   };
 
   return (
     <div className="space-y-6">
       <div className="page-header">
-        <h1 className="page-title">Order Tracking</h1>
-        <p className="page-subtitle">Track orders through the dispatch pipeline</p>
+        <div className="flex items-center gap-3">
+          {orderId && (
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Back to Dashboard"
+            >
+              <FiArrowLeft className="w-5 h-5" />
+            </button>
+          )}
+          <div>
+            <h1 className="page-title">Order Tracking</h1>
+            <p className="page-subtitle">Track orders through the dispatch pipeline</p>
+          </div>
+        </div>
       </div>
 
       {/* Search */}
       <div className="card">
         <div className="card-body">
-          <form onSubmit={handleSearch} className="flex gap-3">
-            <div className="flex-1 relative">
-              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                value={searchId}
-                onChange={(e) => setSearchId(e.target.value)}
-                className="input-field pl-10"
-                placeholder="Enter Order ID (e.g., ORD-20260408-001)"
-              />
-            </div>
-            <button type="submit" disabled={searching} className="btn-primary">
+          <form onSubmit={handleSearch} className="flex items-center gap-3">
+            <VoiceSearchInput
+              value={searchId}
+              onChange={(e) => setSearchId(e.target.value)}
+              onSearch={(val) => performSearch(val)}
+              placeholder="Enter Order ID (e.g., ORD-20260408-001)"
+              inputWidth="w-full"
+            />
+            {trackingData && (
+              <button
+                type="button"
+                onClick={handleClear}
+                className="btn-secondary flex-shrink-0"
+              >
+                Clear
+              </button>
+            )}
+            <button type="submit" disabled={searching} className="btn-primary flex-shrink-0">
               {searching ? 'Searching...' : 'Track Order'}
             </button>
           </form>
+          {/* Error message */}
+          {error && (
+            <p className="text-sm text-red-600 mt-2">{error}</p>
+          )}
         </div>
       </div>
 
+      {/* Loading */}
+      {searching && <PageLoader />}
+
       {/* Tracking Result */}
-      {trackingData && (
+      {trackingData && !searching && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Timeline */}
           <div className="lg:col-span-2 card">
@@ -168,6 +221,14 @@ export default function OrderTrackingPage() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* No results + no search yet */}
+      {!trackingData && !searching && (
+        <div className="card p-12 text-center">
+          <FiPackage className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-500">Enter an Order ID above to track its progress</p>
         </div>
       )}
     </div>

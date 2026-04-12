@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { hasAccess } from '../../utils/permissions';
 import ReauthModal from './ReauthModal';
 
-export default function ProtectedRoute({ requiredRoles }) {
+export default function ProtectedRoute({ requiredRoles, children }) {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { reauthRequired } = useSelector((state) => state.ui);
 
@@ -33,7 +33,7 @@ export default function ProtectedRoute({ requiredRoles }) {
   return (
     <>
       {reauthRequired && <ReauthModal />}
-      <Outlet />
+      {children || <Outlet />}
     </>
   );
 }

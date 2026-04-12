@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FiSearch, FiPrinter, FiDownload } from 'react-icons/fi';
+import { FiPrinter, FiDownload } from 'react-icons/fi';
+import VoiceSearchInput from '../components/common/VoiceSearchInput';
 import { PageLoader } from '../components/common/LoadingSpinner';
 
 export default function BarcodeGeneratorPage() {
@@ -51,18 +52,15 @@ export default function BarcodeGeneratorPage() {
       {/* Search */}
       <div className="card">
         <div className="card-body">
-          <form onSubmit={handleGenerate} className="flex gap-3">
-            <div className="flex-1 relative">
-              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                value={orderId}
-                onChange={(e) => setOrderId(e.target.value)}
-                className="input-field pl-10"
-                placeholder="Enter Order ID to generate barcode"
-              />
-            </div>
-            <button type="submit" disabled={generating} className="btn-primary">
+          <form onSubmit={handleGenerate} className="flex items-center gap-3">
+            <VoiceSearchInput
+              value={orderId}
+              onChange={(e) => setOrderId(e.target.value)}
+              onSearch={(val) => { setOrderId(val); handleGenerate({ preventDefault: () => {} }); }}
+              placeholder="Enter Order ID to generate barcode"
+              inputWidth="w-full"
+            />
+            <button type="submit" disabled={generating} className="btn-primary flex-shrink-0">
               {generating ? 'Generating...' : 'Generate'}
             </button>
           </form>

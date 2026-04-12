@@ -17,7 +17,7 @@ export default function OrderTimerRow({ order }) {
   const style = getUrgencyStyle(urgency);
 
   const handleClick = () => {
-    navigate(`/order-tracking?order=${order.id}`);
+    navigate(`/order-tracking/${order.id}`);
   };
 
   return (

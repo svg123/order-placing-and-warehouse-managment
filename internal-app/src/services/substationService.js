@@ -5,6 +5,14 @@ const substationService = {
 
   getById: (id) => api.get(`/substations/${id}`),
 
+  create: (data) => api.post('/substations', data),
+
+  update: (id, data) => api.put(`/substations/${id}`, data),
+
+  delete: (id) => api.delete(`/substations/${id}`),
+
+  updateStatus: (id, status) => api.patch(`/substations/${id}/status`, { status }),
+
   getOrders: (id, params) => api.get(`/substations/${id}/orders`, { params }),
 
   updateOrderStatus: (substationId, orderId, data) =>
